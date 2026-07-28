@@ -21,6 +21,7 @@ My-Skills-Collection/
 | Skill | Description |
 |-------|-------------|
 | [`word-md-roundtrip`](skills/word-md-roundtrip/SKILL.md) | Round-trip between Microsoft Word (`.docx`) and a chapter-split, AI-context-friendly Markdown structure. PowerShell + Word COM + Pandoc; hierarchical folder split by token budget, navigation hub with WikiLinks, image extraction, and XML-bound placeholders (content controls). **Not lossless** — Markdown-representable content is preserved; see [Limitations](#limitations--not-lossless). |
+| [`edoop`](skills/edoop/SKILL.md) | Command-line access to the [edoop.de](https://edoop.de) parent inbox (Elternpostfach): read/send messages, list/create absences (Krankmeldung), list and book appointments (Termine), profile and children. Bundles a self-contained Python CLI (`edoop`) plus an idempotent installer. Speaks edoop's **undocumented** private JSON API with fully overridable endpoint paths and a raw `edoop api` escape hatch. |
 
 ## Installation
 
@@ -114,6 +115,42 @@ Operational notes:
 See [`skills/word-md-roundtrip/SKILL.md`](skills/word-md-roundtrip/SKILL.md) for
 the full workflow, parameters, placeholder/field model, and the complete list of
 documented scope limits.
+
+## Skill: edoop
+
+Command-line access to the **edoop.de Elternpostfach** (parent inbox), so the
+functions of the edoop parent app can be scripted from the terminal: messages
+and channels, absences / sick reports (Krankmeldung), appointment booking
+(Termine), profile and linked children.
+
+The skill bundles a self-contained Python CLI under
+[`skills/edoop/cli/`](skills/edoop/cli/) and an idempotent installer at
+[`skills/edoop/scripts/install.sh`](skills/edoop/scripts/install.sh).
+
+**Requirements:** Python ≥ 3.9 · network access to your edoop instance
+(default `https://eltern.edoop.de`). No Windows/Word dependency.
+
+**Quick usage:**
+
+```bash
+bash skills/edoop/scripts/install.sh          # installs the `edoop` command
+export EDOOP_EMAIL="you@example.com"
+edoop login --ask                             # password prompted, never stored in files
+edoop messages list
+edoop absences create --child 42 --from 2026-09-01 --to 2026-09-02 --reason "Grippe"
+edoop appointments list
+```
+
+**Note — undocumented API:** edoop publishes no official API, so the CLI targets
+the private JSON API used by the web/mobile apps. Endpoint paths are a best-effort
+reconstruction and are **fully overridable** without editing code
+(`edoop config set endpoints.<name>=/api/...` or `EDOOP_ENDPOINTS`). The
+`edoop api <METHOD> <path>` command issues any authenticated request and works
+regardless of the predefined paths — useful for discovering/verifying the real
+endpoints. Credentials are never written to disk (env var, interactive prompt, or
+system keyring); the session cache lives outside the repo with `600` permissions.
+See [`skills/edoop/SKILL.md`](skills/edoop/SKILL.md) and
+[`skills/edoop/cli/README.md`](skills/edoop/cli/README.md) for full details.
 
 ## Adding a new skill
 
